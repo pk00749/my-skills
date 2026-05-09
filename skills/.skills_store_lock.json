@@ -6,11 +6,6 @@
       "zip_url": "https://lightmake.site/api/v1/download?slug=skill-creator",
       "source": "skillhub",
       "version": "0.1.0"
-    },
-    "minimax-t2i": {
-      "name": "Minimax Text to Image",
-      "source": "local",
-      "path": "minimax-t2i"
     }
   }
 }
