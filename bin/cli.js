@@ -9,6 +9,7 @@ const rootDir = resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const command = args[0];
 const skillName = args[1];
+const isLocal = args.includes('--local') || args.includes('-l');
 
 async function listSkills() {
   const { readdirSync } = await import('fs');
@@ -42,7 +43,7 @@ async function runInstall() {
   const { execSync } = await import('child_process');
 
   if (!skillName) {
-    console.error('Usage: npx skills install <skill-name>');
+    console.error('Usage: npx skills install <skill-name> [--local]');
     console.error('Available skills:');
     const skillsDir = resolve(rootDir, 'skills');
     const { readdirSync } = await import('fs');
@@ -65,14 +66,19 @@ async function runInstall() {
     process.exit(1);
   }
 
-  // Determine global skills path
-  const homeDir = process.env.HOME || process.env.USERPROFILE;
-  const globalSkillsDir = resolve(homeDir, '.claude', 'skills');
+  // Determine target skills path
+  let destSkillsDir;
+  if (isLocal) {
+    destSkillsDir = resolve(rootDir, '.claude', 'skills');
+  } else {
+    const homeDir = process.env.HOME || process.env.USERPROFILE;
+    destSkillsDir = resolve(homeDir, '.claude', 'skills');
+  }
 
   // Ensure directory exists
-  execSync(`mkdir -p "${globalSkillsDir}"`, { stdio: 'inherit' });
+  execSync(`mkdir -p "${destSkillsDir}"`, { stdio: 'inherit' });
 
-  const destSkillDir = resolve(globalSkillsDir, skillName);
+  const destSkillDir = resolve(destSkillsDir, skillName);
   const destSkillMd = resolve(destSkillDir, 'SKILL.md');
   const destReadme = resolve(destSkillDir, 'README.md');
 
@@ -84,6 +90,9 @@ async function runInstall() {
   }
 
   console.log(`✅ Skill "${skillName}" installed successfully!`);
+  if (isLocal) {
+    console.log(`   -> ${destSkillMd}`);
+  }
 }
 
 if (command === 'install') {
@@ -97,7 +106,8 @@ if (command === 'install') {
   console.log('Usage: npx skills <command>');
   console.log('');
   console.log('Commands:');
-  console.log('  install <skill-name>  Install a skill');
-  console.log('  list                 List available skills');
+  console.log('  install <skill-name>  Install a skill (default: global ~/.claude/skills/)');
+  console.log('  install --local       Install to project .claude/skills/');
+  console.log('  list                  List available skills');
   process.exit(1);
 }
