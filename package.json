@@ -1,0 +1,16 @@
+{
+  "name": "claude-skills",
+  "version": "1.0.0",
+  "description": "Claude Code skills installer",
+  "type": "module",
+  "bin": {
+    "skills": "./bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "skills/"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
