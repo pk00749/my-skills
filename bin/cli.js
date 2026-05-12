@@ -10,6 +10,34 @@ const args = process.argv.slice(2);
 const command = args[0];
 const skillName = args[1];
 
+async function listSkills() {
+  const { readdirSync } = await import('fs');
+  const skillsDir = resolve(rootDir, 'skills');
+
+  console.log('Available skills:\n');
+
+  try {
+    const skills = readdirSync(skillsDir).filter(s => !s.startsWith('.'));
+    if (skills.length === 0) {
+      console.log('  No skills found');
+      return;
+    }
+    for (const skill of skills) {
+      const skillMd = resolve(skillsDir, skill, 'SKILL.md');
+      let description = '';
+      try {
+        const { readFileSync } = await import('fs');
+        const content = readFileSync(skillMd, 'utf-8');
+        const match = content.match(/^---\nname: [^\n]+\ndescription: (.+)/);
+        if (match) description = match[1];
+      } catch {}
+      console.log(`  - ${skill.padEnd(20)} ${description}`);
+    }
+  } catch {
+    console.log('  No skills found');
+  }
+}
+
 async function runInstall() {
   const { execSync } = await import('child_process');
 
@@ -63,7 +91,13 @@ if (command === 'install') {
     console.error('Installation failed:', err);
     process.exit(1);
   });
+} else if (command === 'list') {
+  listSkills();
 } else {
-  console.log('Usage: npx skills install <skill-name>');
+  console.log('Usage: npx skills <command>');
+  console.log('');
+  console.log('Commands:');
+  console.log('  install <skill-name>  Install a skill');
+  console.log('  list                 List available skills');
   process.exit(1);
 }
